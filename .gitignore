@@ -1,3 +1,14 @@
+# Argos Data
+*.argosdata
+source
+target
+
+
+###########################
+### GitHub Go Template ####
+###########################
+
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
