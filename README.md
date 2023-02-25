@@ -1,2 +1,2 @@
-# argos-data
+# Argos Data
 Build datasets for Argos Translate
