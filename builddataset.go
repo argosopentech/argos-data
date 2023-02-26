@@ -21,6 +21,10 @@ type DataPackage struct {
 	Links     []string `json:"links"`
 }
 
+func (d DataPackage) String() string {
+	return fmt.Sprintf("Name: %s, Type: %s, FromCode: %s, ToCode: %s, Size: %d, Reference: %s, Links: %s", d.Name, d.Type, d.FromCode, d.ToCode, d.Size, d.Reference, d.Links)
+}
+
 func AppendDataPackageToDataset(dataPackage DataPackage) {
 	// Download zip file at link and save to disk
 	var zipPackagePath string = "dataPackage.argosdata"
@@ -165,7 +169,7 @@ func main() {
 
 	// Loop through all data packages and append to dataset
 	for _, d := range data {
-		fmt.Println(d.Name)
+		fmt.Println(d)
 		AppendDataPackageToDataset(d)
 	}
 }
