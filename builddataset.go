@@ -76,7 +76,7 @@ func AppendDataPackageToDataset(dataPackage DataPackage) {
 			}
 			defer fReader.Close()
 
-			out, err := os.OpenFile(sourcePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+			out, err := os.OpenFile(sourcePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -104,7 +104,7 @@ func AppendDataPackageToDataset(dataPackage DataPackage) {
 			}
 			defer fReader.Close()
 
-			out, err := os.OpenFile(targetPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+			out, err := os.OpenFile(targetPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 			if err != nil {
 				fmt.Println(err)
 			}
