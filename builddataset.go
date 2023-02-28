@@ -56,7 +56,7 @@ func WriteDataToFile(dataPath string, langCode string, f *zip.File) {
 	fmt.Println("Read", len(text), "lines from", f.Name)
 
 	for _, each_ln := range text {
-		var line string = langPrefix + each_ln
+		var line string = langPrefix + each_ln + "\n"
 
 		_, err = out.WriteString(line)
 		if err != nil {
