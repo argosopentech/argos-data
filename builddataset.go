@@ -25,6 +25,35 @@ func (d DataPackage) String() string {
 	return fmt.Sprintf("Name: %s, Type: %s, FromCode: %s, ToCode: %s, Size: %d, Reference: %s, Links: %s", d.Name, d.Type, d.FromCode, d.ToCode, d.Size, d.Reference, d.Links)
 }
 
+func WriteDataToFile(dataPath string, langCode string, f *zip.File) {
+	// Make buffered reader for source file
+	fReader, err := f.Open()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer fReader.Close()
+
+	out, err := os.OpenFile(dataPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer out.Close()
+
+	var langPrefix string = "__" + langCode + "__"
+
+	// Loop through each line until newline character in source file and add language prefix
+	for {
+		line, err := bufio.NewReader(fReader).ReadString('\n')
+		if err != nil {
+			break
+		}
+		_, err = out.WriteString(langPrefix + line)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
 func AppendDataPackageToDataset(dataPackage DataPackage) {
 	// Download zip file at link and save to disk
 	var zipPackagePath string = "dataPackage.argosdata"
@@ -69,61 +98,9 @@ func AppendDataPackageToDataset(dataPackage DataPackage) {
 	// Extract source and target data from zip file
 	for _, f := range r.File {
 		if strings.Contains(f.Name, "source") {
-			// Make buffered reader for source file
-			fReader, err := f.Open()
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer fReader.Close()
-
-			out, err := os.OpenFile(sourcePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer out.Close()
-
-			var langCode string = dataPackage.FromCode
-			var langPrefix string = "__" + langCode + "__"
-
-			// Loop through each line until newline character in source file and add language prefix
-			for {
-				line, err := bufio.NewReader(fReader).ReadString('\n')
-				if err != nil {
-					break
-				}
-				_, err = out.WriteString(langPrefix + line)
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
+			WriteDataToFile(sourcePath, dataPackage.FromCode, f)
 		} else if strings.Contains(f.Name, "target") {
-			// Make buffered reader for target file
-			fReader, err := f.Open()
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer fReader.Close()
-
-			out, err := os.OpenFile(targetPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-			if err != nil {
-				fmt.Println(err)
-			}
-			defer out.Close()
-
-			var langCode string = dataPackage.ToCode
-			var langPrefix string = "__" + langCode + "__"
-
-			// Loop through each line until newline character in target file and add language prefix
-			for {
-				line, err := bufio.NewReader(fReader).ReadString('\n')
-				if err != nil {
-					break
-				}
-				_, err = out.WriteString(langPrefix + line)
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
+			WriteDataToFile(targetPath, dataPackage.ToCode, f)
 		}
 	}
 	// Delete zip file
