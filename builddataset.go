@@ -41,17 +41,54 @@ func WriteDataToFile(dataPath string, langCode string, f *zip.File) {
 
 	var langPrefix string = "__" + langCode + "__"
 
-	// Loop through each line until newline character in source file and add language prefix
-	for {
-		line, err := bufio.NewReader(fReader).ReadString('\n')
-		if err != nil {
-			break
-		}
-		_, err = out.WriteString(langPrefix + line)
+	var i int = 0
+
+	// Read zipped file line by line and write to output file
+	scanner := bufio.NewScanner(fReader)
+
+	scanner.Split(bufio.ScanLines)
+	var text []string
+
+	for scanner.Scan() {
+		text = append(text, scanner.Text())
+	}
+
+	fmt.Println("Read", len(text), "lines from", f.Name)
+
+	for _, each_ln := range text {
+		var line string = langPrefix + each_ln
+
+		_, err = out.WriteString(line)
 		if err != nil {
 			fmt.Println(err)
 		}
+
+		i++
 	}
+
+	/*
+		// Loop through each line until newline character in source file and add language prefix
+		for {
+			readLine, err := bufio.NewReader(fReader).ReadString('\n')
+			if err != nil {
+				if err != io.EOF {
+					fmt.Println(err)
+				}
+				break
+			}
+
+			var line string = langPrefix + readLine
+
+			_, err = out.WriteString(line)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			i++
+		}
+	*/
+
+	fmt.Println("Wrote", i, "lines to", dataPath)
 }
 
 func AppendDataPackageToDataset(dataPackage DataPackage) {
