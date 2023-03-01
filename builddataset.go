@@ -146,8 +146,8 @@ func main() {
 		}
 	}
 
-	// Limit total dataset size to 50 million lines
-	maxDataSize := 50000000
+	// Limit total dataset size to 100 million lines
+	maxDataSize := 100 * 1000000
 	var cummulativeDataSize int = 0
 	for i := 0; i < len(data); i++ {
 		cummulativeDataSize += data[i].Size
