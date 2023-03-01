@@ -25,7 +25,7 @@ func (d DataPackage) String() string {
 	return fmt.Sprintf("Name: %s, Type: %s, FromCode: %s, ToCode: %s, Size: %d, Reference: %s, Links: %s", d.Name, d.Type, d.FromCode, d.ToCode, d.Size, d.Reference, d.Links)
 }
 
-func WriteDataToFile(dataPath string, langCode string, f *zip.File) {
+func WriteDataToFile(dataPackage DataPackage, dataPath string, langCode string, f *zip.File) {
 	// Make buffered reader for source file
 	fReader, err := f.Open()
 	if err != nil {
@@ -53,8 +53,6 @@ func WriteDataToFile(dataPath string, langCode string, f *zip.File) {
 		text = append(text, scanner.Text())
 	}
 
-	fmt.Println("Read", len(text), "lines from", f.Name)
-
 	for _, each_ln := range text {
 		var line string = langPrefix + each_ln + "\n"
 
@@ -66,29 +64,9 @@ func WriteDataToFile(dataPath string, langCode string, f *zip.File) {
 		i++
 	}
 
-	/*
-		// Loop through each line until newline character in source file and add language prefix
-		for {
-			readLine, err := bufio.NewReader(fReader).ReadString('\n')
-			if err != nil {
-				if err != io.EOF {
-					fmt.Println(err)
-				}
-				break
-			}
-
-			var line string = langPrefix + readLine
-
-			_, err = out.WriteString(line)
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			i++
-		}
-	*/
-
-	fmt.Println("Wrote", i, "lines to", dataPath)
+	if i != len(text) {
+		fmt.Println("Error: i != len(text)")
+	}
 }
 
 func AppendDataPackageToDataset(dataPackage DataPackage) {
@@ -135,9 +113,9 @@ func AppendDataPackageToDataset(dataPackage DataPackage) {
 	// Extract source and target data from zip file
 	for _, f := range r.File {
 		if strings.Contains(f.Name, "source") {
-			WriteDataToFile(sourcePath, dataPackage.FromCode, f)
+			WriteDataToFile(dataPackage, sourcePath, dataPackage.FromCode, f)
 		} else if strings.Contains(f.Name, "target") {
-			WriteDataToFile(targetPath, dataPackage.ToCode, f)
+			WriteDataToFile(dataPackage, targetPath, dataPackage.ToCode, f)
 		}
 	}
 	// Delete zip file
@@ -159,25 +137,23 @@ func main() {
 		fmt.Println(err)
 	}
 
-	/*
-		// Select data package with smallest size value
-		var dataPackage DataPackage
-		for _, d := range data {
-			if dataPackage.Size == 0 || d.Size < dataPackage.Size {
-				dataPackage = d
-			}
-		}
-		fmt.Println(dataPackage)
-		// Append data package to dataset
-		AppendDataPackageToDataset(dataPackage)
-	*/
-
 	// Sort data packages by size smallest to largest
 	for i := 0; i < len(data); i++ {
 		for j := 0; j < len(data)-1; j++ {
 			if data[j].Size > data[j+1].Size {
 				data[j], data[j+1] = data[j+1], data[j]
 			}
+		}
+	}
+
+	// Limit total dataset size to 50 million lines
+	maxDataSize := 50000000
+	var cummulativeDataSize int = 0
+	for i := 0; i < len(data); i++ {
+		cummulativeDataSize += data[i].Size
+		if cummulativeDataSize > maxDataSize {
+			data = data[:i]
+			break
 		}
 	}
 
