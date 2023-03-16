@@ -3,6 +3,7 @@
 source
 target
 thepile.jsonl.zst
+thepile.jsonl
 
 ###########################
 ### GitHub Go Template ####
