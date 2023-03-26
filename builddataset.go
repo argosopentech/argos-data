@@ -25,7 +25,7 @@ func (d DataPackage) String() string {
 	return fmt.Sprintf("Name: %s, Type: %s, FromCode: %s, ToCode: %s, Size: %d, Reference: %s, Links: %s", d.Name, d.Type, d.FromCode, d.ToCode, d.Size, d.Reference, d.Links)
 }
 
-func WriteDataToFile(dataPackage DataPackage, dataPath string, langCode string, f *zip.File) {
+func WriteDataToFile(dataPackage DataPackage, dataPath string, source_code string, target_code string, is_source bool, f *zip.File) {
 	// Make buffered reader for source file
 	fReader, err := f.Open()
 	if err != nil {
@@ -39,7 +39,20 @@ func WriteDataToFile(dataPackage DataPackage, dataPath string, langCode string, 
 	}
 	defer out.Close()
 
-	var langPrefix string = "__" + langCode + "__"
+	// Example format for generated dataset:
+	// source
+	// __en__ __de__Hello World
+	// __en__ __de__How are you?
+	// target
+	// Hallo Welt
+	// Wie geht es dir?
+
+	var sourceAndTargetPrefix string
+	if is_source {
+		sourceAndTargetPrefix = "__" + source_code + "__ __" + target_code + "__"
+	} else {
+		sourceAndTargetPrefix = ""
+	}
 
 	var i int = 0
 
@@ -54,7 +67,7 @@ func WriteDataToFile(dataPackage DataPackage, dataPath string, langCode string, 
 	}
 
 	for _, each_ln := range text {
-		var line string = langPrefix + each_ln + "\n"
+		var line string = sourceAndTargetPrefix + each_ln + "\n"
 
 		_, err = out.WriteString(line)
 		if err != nil {
@@ -86,12 +99,6 @@ func AppendDataPackageToDataset(dataPackage DataPackage) {
 
 	_, err = io.Copy(out, resp.Body)
 
-	// Example data package format:
-	// data-europarl-en_de/
-	//   source (text file each line is a sentence)
-	//   target (text file each line is a translated sentence corresponding to source)
-	//   metadata.json
-
 	// Open zip file
 	r, err := zip.OpenReader(zipPackagePath)
 	if err != nil {
@@ -99,23 +106,15 @@ func AppendDataPackageToDataset(dataPackage DataPackage) {
 	}
 	defer r.Close()
 
-	// Example format for generated dataset:
-	// source
-	// __en__Hello World
-	// __en__How are you?
-	// target
-	// __de__Hallo Welt
-	// __de__Wie geht es dir?
-
 	var sourcePath string = "source"
 	var targetPath string = "target"
 
 	// Extract source and target data from zip file
 	for _, f := range r.File {
 		if strings.Contains(f.Name, "source") {
-			WriteDataToFile(dataPackage, sourcePath, dataPackage.FromCode, f)
+			WriteDataToFile(dataPackage, sourcePath, dataPackage.FromCode, dataPackage.ToCode, true, f)
 		} else if strings.Contains(f.Name, "target") {
-			WriteDataToFile(dataPackage, targetPath, dataPackage.ToCode, f)
+			WriteDataToFile(dataPackage, targetPath, dataPackage.FromCode, dataPackage.ToCode, false, f)
 		}
 	}
 	// Delete zip file
