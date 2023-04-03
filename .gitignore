@@ -4,6 +4,7 @@ source
 target
 thepile.jsonl.zst
 thepile.jsonl
+*.torrent
 
 ###########################
 ### GitHub Go Template ####
