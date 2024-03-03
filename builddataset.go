@@ -158,6 +158,11 @@ func main() {
 
 	// Loop through all data packages and append to dataset
 	for _, d := range data {
+		// Don't use datasets with more than 4 million sentences (OOM on data.argosopentech.com server)
+		if d.Size > 4000000 {
+			continue
+		}
+
 		fmt.Println(d)
 		AppendDataPackageToDataset(d)
 	}
