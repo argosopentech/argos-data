@@ -19,6 +19,11 @@ func main() {
 		return
 	}
 
+	// Configuration for maximum integer size and supported operators
+	maxIntSize := 99
+	// operators := []string{"+", "-", "*", "/"}
+	operators := []string{"+"}
+
 	fmt.Println("Generating arithmetic expressions...")
 
 	// Create a folder named 'arith' to store the generated data
@@ -44,7 +49,7 @@ func main() {
 
 	// Write arithmetic expressions to source.txt and corresponding results to target.txt
 	for i := 0; i < numExpressions; i++ {
-		expression, result := generateArithmeticExpression()
+		expression, result := generateArithmeticExpression(maxIntSize, operators)
 		sourceFile.WriteString(expression + "\n")
 		targetFile.WriteString(result + "\n")
 	}
@@ -52,13 +57,12 @@ func main() {
 	fmt.Println("Arithmetic data generated successfully in 'arith' folder.")
 }
 
-func generateArithmeticExpression() (string, string) {
-	// Generate two random numbers between 1 and 9999
-	num1 := rand.Intn(9999) + 1
-	num2 := rand.Intn(9999) + 1
+func generateArithmeticExpression(maxIntSize int, operators []string) (string, string) {
+	// Generate two random numbers between 1 and maxIntSize
+	num1 := rand.Intn(maxIntSize) + 1
+	num2 := rand.Intn(maxIntSize) + 1
 
 	// Choose a random arithmetic operator
-	operators := []string{"+", "-", "*", "/"}
 	operator := operators[rand.Intn(len(operators))]
 
 	// Create the expression and calculate the result
